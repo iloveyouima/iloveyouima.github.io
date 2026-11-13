@@ -269,6 +269,33 @@ body{
   line-height: 1.6;
 }
 
+/* ---------- VIDEO ---------- */
+.video-wrap{
+  max-width: 420px;
+  margin: 4.5rem auto 0;
+}
+.video-polaroid{
+  background: #fff;
+  padding: 0.8rem 0.8rem 0.6rem;
+  box-shadow: 0 10px 24px rgba(58,44,57,0.16);
+  position: relative;
+  transform: rotate(-1deg);
+}
+.video-polaroid video{
+  display: block;
+  width: 100%;
+  max-height: 75vh;
+  background: var(--plum-deep);
+  object-fit: contain;
+}
+.video-caption{
+  font-family: 'Caveat', cursive;
+  font-size: 1.6rem;
+  color: var(--plum);
+  text-align: center;
+  margin-top: 0.4rem;
+}
+
 /* ---------- PLAYLIST ---------- */
 .playlist{
   background: var(--plum);
@@ -489,6 +516,14 @@ footer p{
     <div class="polaroid"><div class="tape"></div><div class="frame g5"><img src="foto5.JPG" alt="Momen kita 5" style="width:100%;height:100%;object-fit:cover;"></div></div>
     <div class="polaroid"><div class="tape"></div><div class="frame g6"><img src="foto6.JPG" alt="Momen kita 6" style="width:100%;height:100%;object-fit:cover;"></div></div>
   </div>
+
+  <div class="video-wrap">
+    <div class="video-polaroid">
+      <div class="tape"></div>
+      <video id="love-video" src="video.mp4#t=0.1" controls playsinline preload="metadata"></video>
+      <div class="video-caption">video kita</div>
+    </div>
+  </div>
 </section>
 
 <section class="playlist">
@@ -621,6 +656,34 @@ footer p{
       audio.play().catch((err)=>{ console.warn('Audio gagal main:', err); });
       toggleBtn.classList.remove('paused');
     });
+  });
+
+  // video: musik berhenti waktu video diputar, lanjut lagi waktu video selesai/di-pause
+  const video = document.getElementById('love-video');
+  let resumeMusic = false;
+
+  video.addEventListener('play', ()=>{
+    resumeMusic = !audio.paused;
+    audio.pause();
+    toggleBtn.classList.add('paused');
+  });
+
+  function resumeAfterVideo(){
+    if(resumeMusic){
+      resumeMusic = false;
+      audio.play().catch(()=>{});
+      toggleBtn.classList.remove('paused');
+    }
+  }
+  video.addEventListener('pause', resumeAfterVideo);
+  video.addEventListener('ended', resumeAfterVideo);
+
+  // kalau musik diputar lagi, videonya otomatis berhenti
+  audio.addEventListener('play', ()=>{
+    if(!video.paused){
+      resumeMusic = false;
+      video.pause();
+    }
   });
 </script>
 
