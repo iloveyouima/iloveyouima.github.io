@@ -281,6 +281,10 @@ body{
   position: relative;
   transform: rotate(-1deg);
 }
+.video-polaroid + .video-polaroid{
+  margin-top: 3.5rem;
+  transform: rotate(1.2deg);
+}
 .video-polaroid video{
   display: block;
   width: 100%;
@@ -515,13 +519,19 @@ footer p{
     <div class="polaroid"><div class="tape"></div><div class="frame g4"><img src="foto4.JPG" alt="Momen kita 4" style="width:100%;height:100%;object-fit:cover;"></div></div>
     <div class="polaroid"><div class="tape"></div><div class="frame g5"><img src="foto5.JPG" alt="Momen kita 5" style="width:100%;height:100%;object-fit:cover;"></div></div>
     <div class="polaroid"><div class="tape"></div><div class="frame g6"><img src="foto6.JPG" alt="Momen kita 6" style="width:100%;height:100%;object-fit:cover;"></div></div>
+    <div class="polaroid"><div class="tape"></div><div class="frame g1"><img src="foto7.JPG" alt="Momen kita 7" style="width:100%;height:100%;object-fit:cover;"></div></div>
   </div>
 
   <div class="video-wrap">
     <div class="video-polaroid">
       <div class="tape"></div>
-      <video id="love-video" src="video.mp4#t=0.1" controls playsinline preload="metadata"></video>
-      <div class="video-caption">video kita</div>
+      <video class="love-video" src="video.mp4#t=0.1" controls playsinline preload="metadata"></video>
+      <div class="video-caption">video kita 1</div>
+    </div>
+    <div class="video-polaroid">
+      <div class="tape"></div>
+      <video class="love-video" src="video2.mp4#t=0.1" controls playsinline preload="metadata"></video>
+      <div class="video-caption">video kita 2</div>
     </div>
   </div>
 </section>
@@ -658,31 +668,43 @@ footer p{
     });
   });
 
-  // video: musik berhenti waktu video diputar, lanjut lagi waktu video selesai/di-pause
-  const video = document.getElementById('love-video');
+  // video: musik berhenti waktu video diputar, lanjut lagi waktu video selesai/di-pause.
+  // cuma satu video yang boleh jalan dalam satu waktu.
+  const videos = document.querySelectorAll('.love-video');
   let resumeMusic = false;
+  let activeVideo = null;
 
-  video.addEventListener('play', ()=>{
-    resumeMusic = !audio.paused;
-    audio.pause();
-    toggleBtn.classList.add('paused');
+  videos.forEach(v=>{
+    v.addEventListener('play', ()=>{
+      videos.forEach(o=>{ if(o !== v && !o.paused) o.pause(); });
+      if(!audio.paused){
+        resumeMusic = true;
+        audio.pause();
+        toggleBtn.classList.add('paused');
+      } else if(!activeVideo){
+        resumeMusic = false;
+      }
+      activeVideo = v;
+    });
+    v.addEventListener('pause', onVideoStop);
+    v.addEventListener('ended', onVideoStop);
   });
 
-  function resumeAfterVideo(){
+  function onVideoStop(e){
+    if(activeVideo !== e.target) return;
+    activeVideo = null;
     if(resumeMusic){
       resumeMusic = false;
       audio.play().catch(()=>{});
       toggleBtn.classList.remove('paused');
     }
   }
-  video.addEventListener('pause', resumeAfterVideo);
-  video.addEventListener('ended', resumeAfterVideo);
 
-  // kalau musik diputar lagi, videonya otomatis berhenti
+  // kalau musik diputar lagi, video yang lagi jalan otomatis berhenti
   audio.addEventListener('play', ()=>{
-    if(!video.paused){
+    if(activeVideo && !activeVideo.paused){
       resumeMusic = false;
-      video.pause();
+      activeVideo.pause();
     }
   });
 </script>
